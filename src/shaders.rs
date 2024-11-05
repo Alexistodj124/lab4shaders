@@ -46,15 +46,18 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
 
 pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms, sphere_index: usize) -> Color {
   match sphere_index {
-      0 => black_and_white(fragment, uniforms),
+      0 => earth_shader(fragment, uniforms),
       1 => dalmata_shader(fragment, uniforms),
       2 => cloud_shader(fragment, uniforms),
       3 => cellular_shader(fragment, uniforms),
       4 => lava_shader(fragment, uniforms),
-      // Añade más shaders aquí si es necesario
-      _ => black_and_white(fragment, uniforms),  // Shader por defecto
+      5 => rocky_planet_shader(fragment, uniforms),
+      6 => solar_shader(fragment, uniforms),  
+      7 => gaseous_planet_shader(fragment, uniforms),
+      _ => black_and_white(fragment, uniforms),  
   }
 }
+
 
 
 fn black_and_white(fragment: &Fragment, uniforms: &Uniforms) -> Color {
@@ -192,4 +195,113 @@ fn lava_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     let color = dark_color.lerp(&bright_color, noise_value);
   
     color * fragment.intensity
+}
+  fn rocky_planet_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+    let zoom = 50.0; 
+    let ox = 10.0;  
+    let oy = 20.0;
+    let x = fragment.vertex_position.x;
+    let y = fragment.vertex_position.y;
+
+    let noise_value = uniforms.noise.get_noise_2d(x * zoom + ox, y * zoom + oy).abs();
+
+    let mountain_color = Color::new(139, 69, 19); 
+    let plain_color = Color::new(205, 133, 63);  
+    let lowland_color = Color::new(222, 184, 135);   
+
+    let final_color = if noise_value < 0.2 {
+        lowland_color  
+    } else if noise_value < 0.5 {
+        plain_color  
+    } else {
+        mountain_color 
+    };
+
+    final_color * fragment.intensity
+  }
+  fn gaseous_planet_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+    let zoom = 0.3;  // Controla la densidad de las bandas de gas
+    let speed = 0.1; // Velocidad del movimiento de gas
+    let time = uniforms.time as f32 * speed;
+
+    let x = fragment.vertex_position.x;
+    let y = fragment.vertex_position.y;
+    let z = fragment.depth;
+
+    // Generar ruido para las franjas gaseosas con movimiento
+    let noise_value = uniforms.noise.get_noise_3d(x * zoom, (y + time) * zoom, z * zoom).abs();
+
+    // Definir colores suaves y etéreos para el planeta gaseoso
+    let gas_color_1 = Color::new(135, 206, 250); // Azul cielo
+    let gas_color_2 = Color::new(176, 224, 230); // Azul claro
+    let gas_color_3 = Color::new(255, 228, 196); // Beige suave
+
+    // Interpolación de colores para crear capas gaseosas
+    let final_color = if noise_value < 0.4 {
+        gas_color_1
+    } else if noise_value < 0.7 {
+        gas_color_2
+    } else {
+        gas_color_3
+    };
+
+    // Ajustar intensidad para efectos de iluminación sutiles
+    final_color * fragment.intensity
+}
+
+
+fn solar_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+  let zoom = 20.0;
+  let speed = 0.2; 
+  let time = uniforms.time as f32 * speed;
+
+  let x = fragment.vertex_position.x;
+  let y = fragment.vertex_position.y;
+  let z = fragment.depth;
+
+  let noise_value1 = uniforms.noise.get_noise_3d(x * zoom + time, y * zoom, z * zoom).abs();
+  let noise_value2 = uniforms.noise.get_noise_3d((x + 50.0) * zoom, (y + 50.0) * zoom, (z + time) * zoom).abs();
+  let combined_noise = (noise_value1 + noise_value2) * 0.5;
+
+  let core_color = Color::new(255, 140, 0);   
+  let flare_color = Color::new(255, 69, 0);   
+  let corona_color = Color::new(255, 215, 0);  
+
+  let final_color = if combined_noise < 0.3 {
+      corona_color  
+  } else if combined_noise < 0.6 {
+      core_color    
+  } else {
+      flare_color   
+  };
+
+  final_color * fragment.intensity
+}
+
+fn earth_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+  let zoom = 20.0; 
+  let speed = 0.10;
+  let time = uniforms.time as f32 * speed;
+
+  let x = fragment.vertex_position.x;
+  let y = fragment.vertex_position.y;
+  let z = fragment.depth;
+
+  let noise_value1 = uniforms.noise.get_noise_3d(x * zoom + time, y * zoom, z * zoom).abs();
+  let noise_value2 = uniforms.noise.get_noise_3d((x + 50.0) * zoom, (y + 50.0) * zoom, (z + time) * zoom).abs();
+  let combined_noise = (noise_value1 + noise_value2) * 0.5; 
+
+  let ocean_color = Color::new(0, 105, 148);   
+  let land_color = Color::new(34, 139, 34); 
+  let mountain_color = Color::new(139, 69, 19);   
+
+  let final_color = if combined_noise < 0.3 {
+      ocean_color   
+  } else if combined_noise < 0.6 {
+      land_color     
+  } else {
+      mountain_color 
+  };
+
+  final_color * fragment.intensity
 }
