@@ -1,36 +1,5 @@
-# Software Rendering - 02 - Line
+![image](https://github.com/user-attachments/assets/07709cf6-4e09-4869-81e0-b09adb2be993)
+![image](https://github.com/user-attachments/assets/22a4e74c-9540-4cf4-ab97-6a605931687b)
+![image](https://github.com/user-attachments/assets/4af06cf3-3c94-48cf-8d5b-6f4363a9e6bd)
+![image](https://github.com/user-attachments/assets/018545d5-1888-4a84-9823-695e2441f8c7)
 
-## Objective
-
-- Understand and implement Bresenham's line drawing algorithm.
-- Integrate the line drawing functionality with the existing framebuffer and BMP writer classes.
-- Draw lines and output the result as a BMP file.
-
-## Running the Project
-
-1. Clone the repository and switch to the `SR-02-Line` branch:
-    ```bash
-    git clone https://github.com/menene/cc2018-30-2-2024.git
-    cd cc2018-30-2-2024
-    git checkout SR-02-Line
-    ```
-
-2. Build and run the project:
-    ```bash
-    cargo run
-    ```
-
-3. Check the `output.bmp` file in the project directory to see the points you have drawn.
-
-## Resources
-
-- [Rust Programming Language](https://www.rust-lang.org/)
-- [Framebuffer](https://en.wikipedia.org/wiki/Framebuffer)
-- [BMP File Format](https://en.wikipedia.org/wiki/BMP_file_format)
-- [Raster Graphics](https://en.wikipedia.org/wiki/Raster_graphics)
-- [Bresenham's Line Algorithm](https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm)
-
-Happy coding!
-
----
-**Erick Marroquín**
