@@ -77,7 +77,6 @@ fn create_model_matrix(translation: Vec3, scale: f32, rotation: Vec3) -> Mat4 {
     transform_matrix * rotation_matrix
 }
 
-
 fn create_view_matrix(eye: Vec3, center: Vec3, up: Vec3) -> Mat4 {
     look_at(&eye, &center, &up)
 }
@@ -100,7 +99,7 @@ fn create_viewport_matrix(width: f32, height: f32) -> Mat4 {
     )
 }
 
-fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Vertex]) {
+fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Vertex], sphere_index: usize) {
     // Vertex Shader
     let mut transformed_vertices = Vec::with_capacity(vertex_array.len());
     for vertex in vertex_array {
@@ -132,7 +131,7 @@ fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Ve
         let y = fragment.position.y as usize;
 
         if x < framebuffer.width && y < framebuffer.height {
-            let shaded_color = fragment_shader(&fragment, &uniforms);
+            let shaded_color = fragment_shader(&fragment, &uniforms, sphere_index);
             let color = shaded_color.to_hex();
             framebuffer.set_current_color(color);
             framebuffer.point(x, y, fragment.depth);
@@ -161,12 +160,20 @@ fn main() {
 
     framebuffer.set_background_color(0x333355);
 
-    // model position
-    let translation = Vec3::new(0.0, 0.0, 0.0);
-    let rotation = Vec3::new(0.0, 0.0, 0.0);
-    let scale = 1.0f32;
+    // Parámetros de posición y escala para las 7 esferas
+    let sphere_params = [
+        (Vec3::new(-2.0, 0.0, 0.0), 0.5),  // Esfera 1
+        (Vec3::new(2.0, 0.0, 0.0), 0.5),   // Esfera 2
+        (Vec3::new(0.0, 2.0, 0.0), 0.5),   // Esfera 3
+        (Vec3::new(0.0, -2.0, 0.0), 0.5),  // Esfera 4
+        (Vec3::new(1.5, 1.5, 0.0), 0.5),   // Esfera 5
+        (Vec3::new(-1.5, 1.5, 0.0), 0.5),  // Esfera 6
+        (Vec3::new(0.0, 0.0, 0.0), 0.7)    // Esfera central
+    ];
 
-    // camera parameters
+    let rotation = Vec3::new(0.0, 0.0, 0.0);
+
+    // Camera parameters
     let mut camera = Camera::new(
         Vec3::new(0.0, 0.0, 5.0),
         Vec3::new(0.0, 0.0, 0.0),
@@ -188,23 +195,24 @@ fn main() {
 
         framebuffer.clear();
 
-        let noise = create_noise();
-        let model_matrix = create_model_matrix(translation, scale, rotation);
         let view_matrix = create_view_matrix(camera.eye, camera.center, camera.up);
         let projection_matrix = create_perspective_matrix(window_width as f32, window_height as f32);
         let viewport_matrix = create_viewport_matrix(framebuffer_width as f32, framebuffer_height as f32);
-        let uniforms = Uniforms { 
-            model_matrix, 
-            view_matrix, 
-            projection_matrix, 
-            viewport_matrix,
-            time,
-            noise
-        };
 
+        // Render cada esfera con su shader único
+        for (i, (position, scale)) in sphere_params.iter().enumerate() {
+            let model_matrix = create_model_matrix(*position, *scale, rotation);
+            let uniforms = Uniforms { 
+                model_matrix, 
+                view_matrix, 
+                projection_matrix, 
+                viewport_matrix,
+                time,
+                noise: create_noise()
+            };
 
-        framebuffer.set_current_color(0xFFDDDD);
-        render(&mut framebuffer, &uniforms, &vertex_arrays);
+            render(&mut framebuffer, &uniforms, &vertex_arrays, i);
+        }
 
         window
             .update_with_buffer(&framebuffer.buffer, framebuffer_width, framebuffer_height)

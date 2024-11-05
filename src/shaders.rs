@@ -44,13 +44,18 @@ pub fn vertex_shader(vertex: &Vertex, uniforms: &Uniforms) -> Vertex {
     }
 }
 
-pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
-    black_and_white(fragment, uniforms)
-    // dalmata_shader(fragment, uniforms)
-    // cloud_shader(fragment, uniforms)
-    // cellular_shader(fragment, uniforms)
-    // lava_shader(fragment, uniforms)
+pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms, sphere_index: usize) -> Color {
+  match sphere_index {
+      0 => black_and_white(fragment, uniforms),
+      1 => dalmata_shader(fragment, uniforms),
+      2 => cloud_shader(fragment, uniforms),
+      3 => cellular_shader(fragment, uniforms),
+      4 => lava_shader(fragment, uniforms),
+      // Añade más shaders aquí si es necesario
+      _ => black_and_white(fragment, uniforms),  // Shader por defecto
+  }
 }
+
 
 fn black_and_white(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     let seed = uniforms.time as f32 * fragment.vertex_position.y * fragment.vertex_position.x;
